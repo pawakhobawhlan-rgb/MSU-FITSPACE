@@ -1,0 +1,844 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>MSU FITSPACE - หาเพื่อนออกกำลังกาย มหาวิทยาลัยมหาสารคาม</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Kanit', 'sans-serif'], },
+                    colors: { primary: '#FF5722', secondary: '#2196F3', }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Kanit', sans-serif;
+            background-color: #f3f4f6;
+            margin: 0;
+            overflow: hidden;
+        }
+        .app-container {
+            max-width: 480px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            height: 100vh;
+            height: 100dvh;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+            position: relative;
+        }
+        .scrollable-content {
+            flex: 1;
+            overflow-y: auto;
+            padding-bottom: 80px;
+            -webkit-overflow-scrolling: touch;
+        }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        
+        .chat-bubble {
+            max-width: 80%;
+            padding: 10px 15px;
+            border-radius: 20px;
+            margin-bottom: 10px;
+            word-wrap: break-word;
+        }
+        .chat-bubble.sent {
+            background-color: #FF5722;
+            color: white;
+            align-self: flex-end;
+            border-bottom-right-radius: 4px;
+        }
+        .chat-bubble.received {
+            background-color: #f1f5f9;
+            color: #334155;
+            align-self: flex-start;
+            border-bottom-left-radius: 4px;
+        }
+        .avatar-option {
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 2px solid transparent;
+        }
+        .avatar-option.selected {
+            border-color: #FF5722;
+            background-color: #fff7ed;
+            transform: scale(1.1);
+        }
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+
+    <!-- VIEW: LOGIN -->
+    <div id="view-login" class="flex-1 flex flex-col items-center justify-center p-6 h-full w-full absolute bg-white z-50 overflow-y-auto">
+        <div class="w-20 h-20 bg-primary text-white rounded-full flex items-center justify-center text-3xl mb-4 shadow-lg">
+            <i class="fa-solid fa-person-running"></i>
+        </div>
+        <h1 class="text-3xl font-bold text-gray-800 mb-1">MSU FITSPACE</h1>
+        <p class="text-gray-500 mb-6 text-center text-sm">คอมมูนิตี้คนรักสุขภาพ มหาวิทยาลัยมหาสารคาม</p>
+        
+        <div class="w-full max-w-sm space-y-4 pb-10">
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">เลือกรูปโปรไฟล์ (Avatar)</label>
+                <div class="flex justify-between" id="avatar-container">
+                    <div class="avatar-option selected w-12 h-12 rounded-full flex items-center justify-center text-2xl bg-gray-100" onclick="selectAvatar(this, '🏃‍♂️')">🏃‍♂️</div>
+                    <div class="avatar-option w-12 h-12 rounded-full flex items-center justify-center text-2xl bg-gray-100" onclick="selectAvatar(this, '🏃‍♀️')">🏃‍♀️</div>
+                    <div class="avatar-option w-12 h-12 rounded-full flex items-center justify-center text-2xl bg-gray-100" onclick="selectAvatar(this, '🏋️‍♂️')">🏋️‍♂️</div>
+                    <div class="avatar-option w-12 h-12 rounded-full flex items-center justify-center text-2xl bg-gray-100" onclick="selectAvatar(this, '🚴‍♀️')">🚴‍♀️</div>
+                    <div class="avatar-option w-12 h-12 rounded-full flex items-center justify-center text-2xl bg-gray-100" onclick="selectAvatar(this, '🧘‍♀️')">🧘‍♀️</div>
+                </div>
+                <input type="hidden" id="login-avatar" value="🏃‍♂️">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">ชื่อของคุณ</label>
+                <input type="text" id="login-name" placeholder="ใส่ชื่อเล่น..." class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">เพศของคุณ</label>
+                <select id="login-gender" class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary">
+                    <option value="" disabled selected>เลือกเพศ...</option>
+                    <option value="male">ชาย</option>
+                    <option value="female">หญิง</option>
+                    <option value="other">อื่นๆ</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">คำแนะนำตัวสั้นๆ (Bio)</label>
+                <input type="text" id="login-bio" placeholder="เช่น ชอบวิ่งตอนเย็น, เพิ่งเริ่มฟิตเนส" class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+            </div>
+            
+            <button onclick="login()" class="w-full bg-primary text-white font-bold rounded-xl px-4 py-3 mt-4 hover:bg-orange-600 transition shadow-md">
+                เข้าสู่ระบบ
+            </button>
+            <p id="login-error" class="text-red-500 text-sm text-center hidden">กรุณากรอกข้อมูลให้ครบถ้วน</p>
+        </div>
+    </div>
+
+    <!-- VIEW: FEED (GLOBAL) -->
+    <div id="view-feed" class="hidden flex-col h-full w-full">
+        <div class="bg-primary text-white p-4 shadow-md flex justify-between items-center z-10">
+            <div>
+                <h2 class="text-xl font-bold"><i class="fa-solid fa-earth-asia mr-2"></i> MSU FITSPACE</h2>
+                <div class="text-xs text-orange-100 mt-1">บอร์ดสาธารณะสำหรับชาว มมส</div>
+            </div>
+            <div class="flex items-center space-x-3">
+                <button onclick="showMyProfile()" class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center hover:bg-white/30 transition shadow-sm text-xl border-2 border-white/50" title="โปรไฟล์ของฉัน" id="nav-my-avatar">
+                    <!-- Avatar will be injected here -->
+                </button>
+            </div>
+        </div>
+        
+        <div class="scroll-content p-4 space-y-4 overflow-y-auto flex-1 pb-24 bg-gray-100" id="feed-list">
+            <!-- Posts will be generated here -->
+        </div>
+
+        <!-- Floating Action Button -->
+        <button onclick="openCreateModal()" class="absolute bottom-20 right-4 w-14 h-14 bg-primary text-white rounded-full shadow-lg flex items-center justify-center text-2xl hover:bg-orange-600 transition z-20">
+            <i class="fa-solid fa-plus"></i>
+        </button>
+    </div>
+
+    <!-- VIEW: CHATS -->
+    <div id="view-chats" class="hidden flex-col h-full w-full">
+        <div class="bg-primary text-white p-4 shadow-md z-10">
+            <h2 class="text-xl font-bold">แชทของคุณ</h2>
+        </div>
+        <div class="scroll-content flex-1 overflow-y-auto pb-20 bg-white" id="chats-list">
+            <!-- Chat lists will appear here -->
+        </div>
+    </div>
+
+    <!-- VIEW: CHAT ROOM -->
+    <div id="view-chatroom" class="hidden flex-col h-full w-full absolute bg-white z-40">
+        <div class="bg-white border-b border-gray-200 p-4 flex items-center shadow-sm z-10">
+            <button onclick="goTo('chats')" class="text-gray-500 hover:text-primary mr-4 text-xl">
+                <i class="fa-solid fa-arrow-left"></i>
+            </button>
+            <div class="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center mr-3 text-2xl border border-gray-200" id="chat-partner-avatar">
+                <!-- Avatar -->
+            </div>
+            <div>
+                <h3 id="chat-partner-name" class="font-bold text-gray-800 leading-tight">ชื่อเพื่อน</h3>
+                <p class="text-xs text-green-500">ออนไลน์</p>
+            </div>
+        </div>
+        
+        <div class="flex-1 overflow-y-auto p-4 flex flex-col bg-slate-50" id="chat-messages">
+            <!-- Messages go here -->
+        </div>
+
+        <div class="p-3 border-t border-gray-200 bg-white flex items-center pb-6">
+            <input type="text" id="chat-input" placeholder="พิมพ์ข้อความ..." class="flex-1 border border-gray-300 rounded-full px-4 py-2 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary" onkeypress="handleChatKeyPress(event)">
+            <button onclick="sendMessage()" class="w-10 h-10 bg-primary text-white rounded-full ml-2 flex items-center justify-center hover:bg-orange-600 transition flex-shrink-0">
+                <i class="fa-solid fa-paper-plane"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- MODAL: CREATE POST -->
+    <div id="modal-create" class="hidden absolute inset-0 bg-black/50 z-50 flex items-end justify-center">
+        <div class="bg-white w-full rounded-t-3xl p-6 transform transition-transform translate-y-full" id="modal-create-content" style="transition: transform 0.3s ease-out;">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-xl font-bold text-gray-800">สร้างนัดหมายใหม่</h3>
+                <button onclick="closeCreateModal()" class="text-gray-400 hover:text-gray-600 text-xl">
+                    <i class="fa-solid fa-times"></i>
+                </button>
+            </div>
+            
+            <div class="space-y-4 mb-6">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">สถานที่ <i class="fa-solid fa-location-dot text-primary"></i></label>
+                    <select id="post-location" class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary">
+                        <option value="สนามลู่ฟ้า">สนามลู่ฟ้า</option>
+                        <option value="สนามลู่แดง">สนามลู่แดง</option>
+                        <option value="อาคารนันทนาการ">อาคารนันทนาการ</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">เวลา <i class="fa-regular fa-clock text-primary"></i></label>
+                    <input type="time" id="post-time" class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">เพศที่อยากไปด้วย <i class="fa-solid fa-venus-mars text-primary"></i></label>
+                    <select id="post-pref-gender" class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary">
+                        <option value="any">ไม่จำกัด</option>
+                        <option value="male">ชาย</option>
+                        <option value="female">หญิง</option>
+                    </select>
+                </div>
+            </div>
+            
+            <button onclick="submitPost()" class="w-full bg-primary text-white font-bold rounded-xl px-4 py-3 hover:bg-orange-600 transition shadow-md">
+                โพสต์หาเพื่อน
+            </button>
+        </div>
+    </div>
+
+    <!-- MODAL: VIEW PROFILE -->
+    <div id="modal-profile" class="hidden absolute inset-0 bg-black/60 z-50 flex items-center justify-center p-4 opacity-0 transition-opacity duration-200">
+        <div class="bg-white rounded-3xl p-6 w-full max-w-sm text-center shadow-xl transform scale-95 transition-transform duration-200" id="modal-profile-content">
+            <div class="flex justify-end mb-2">
+                <button onclick="closeProfileModal()" class="text-gray-400 hover:text-gray-600 text-xl">
+                    <i class="fa-solid fa-times"></i>
+                </button>
+            </div>
+            <div class="w-24 h-24 mx-auto bg-gray-100 rounded-full flex items-center justify-center text-5xl mb-4 border-4 border-primary/20 shadow-inner" id="profile-modal-avatar">
+                <!-- Avatar -->
+            </div>
+            <h3 id="profile-modal-name" class="text-2xl font-bold text-gray-800 mb-1">ชื่อ</h3>
+            <p id="profile-modal-gender" class="text-gray-500 text-sm mb-4">เพศ</p>
+            
+            <div class="bg-gray-50 rounded-xl p-4 mb-6 text-left border border-gray-100">
+                <p class="text-xs text-gray-400 mb-1">คำแนะนำตัว (Bio)</p>
+                <p id="profile-modal-bio" class="text-gray-700 text-sm font-medium">ไม่มีคำแนะนำตัว</p>
+            </div>
+            
+            <button id="profile-modal-chat-btn" class="w-full bg-secondary text-white font-bold rounded-xl px-4 py-3 hover:bg-blue-600 transition shadow-md flex items-center justify-center">
+                <i class="fa-regular fa-comment-dots mr-2"></i> ทักแชทคนนี้
+            </button>
+        </div>
+    </div>
+
+    <!-- BOTTOM NAVIGATION -->
+    <div id="bottom-nav" class="hidden absolute bottom-0 w-full bg-white border-t border-gray-200 flex justify-around items-center pb-safe pt-2 pb-4 shadow-[0_-5px_10px_rgba(0,0,0,0.05)] z-30">
+        <button onclick="goTo('feed')" class="nav-btn flex flex-col items-center p-2 text-primary w-1/3" id="nav-btn-feed">
+            <i class="fa-solid fa-earth-asia text-xl mb-1"></i>
+            <span class="text-xs font-medium">บอร์ดรวม</span>
+        </button>
+        <button onclick="goTo('chats')" class="nav-btn flex flex-col items-center p-2 text-gray-400 w-1/3 hover:text-gray-600 transition relative" id="nav-btn-chats">
+            <div class="relative">
+                <i class="fa-solid fa-comment text-xl mb-1"></i>
+                <div id="chat-badge" class="hidden absolute -top-1 -right-2 bg-red-500 text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center">!</div>
+            </div>
+            <span class="text-xs font-medium">แชท</span>
+        </button>
+    </div>
+
+    <!-- Custom Alert/Message Box -->
+    <div id="message-box" class="hidden absolute inset-0 bg-black/50 z-[100] flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl p-6 w-full max-w-sm text-center shadow-xl">
+            <div id="msg-icon" class="text-4xl mb-4 text-primary">
+                <i class="fa-solid fa-circle-info"></i>
+            </div>
+            <h3 id="msg-title" class="text-xl font-bold text-gray-800 mb-2">แจ้งเตือน</h3>
+            <p id="msg-text" class="text-gray-600 mb-6 whitespace-pre-line">ข้อความ</p>
+            <button onclick="closeMessageBox()" class="bg-primary text-white font-bold rounded-xl px-8 py-2 hover:bg-orange-600 transition">
+                ตกลง
+            </button>
+        </div>
+    </div>
+
+</div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+    import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+    import { getFirestore, doc, setDoc, onSnapshot, collection } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+    // --- Firebase & App Configuration ---
+    const CORE_APP_ID = typeof __app_id !== 'undefined' ? __app_id : 'fitbuddy-global-app';
+    const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
+    
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const auth = getAuth(app);
+
+    // --- Application State ---
+    window.state = {
+        currentUser: null,
+        currentView: 'login',
+        posts: [],
+        chats: {}, 
+        activeChatId: null
+    };
+
+    // --- Authentication Logic ---
+    async function initAuth() {
+        try {
+            const token = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+            if (token) {
+                await signInWithCustomToken(auth, token);
+            } else {
+                await signInAnonymously(auth);
+            }
+            
+            // Check if user has saved profile locally
+            const savedProfile = localStorage.getItem('fitbuddy_global_profile');
+            
+            if (savedProfile) {
+                window.state.currentUser = { ...JSON.parse(savedProfile), id: auth.currentUser.uid };
+                document.getElementById('nav-my-avatar').innerText = window.state.currentUser.avatar;
+                window.goTo('feed');
+                setupDatabaseListeners(); // Start listening to real-time data
+            }
+        } catch (error) {
+            console.error("Auth error:", error);
+            window.showMessage('ข้อผิดพลาด', 'ไม่สามารถเชื่อมต่อระบบได้', 'error');
+        }
+    }
+
+    // --- Database Listeners ---
+    function setupDatabaseListeners() {
+        if (!auth.currentUser) return;
+
+        // Listen for ALL Feed Posts (Global)
+        const postsRef = collection(db, 'artifacts', CORE_APP_ID, 'public', 'data', 'global_posts');
+        onSnapshot(postsRef, (snapshot) => {
+            const loadedPosts = [];
+            snapshot.forEach(doc => {
+                loadedPosts.push(doc.data()); // Load every post!
+            });
+            window.state.posts = loadedPosts;
+            if (window.state.currentView === 'feed') window.renderFeed();
+        }, (error) => console.error("Posts listening error:", error));
+
+        // Listen for Chats (Filter locally)
+        const chatsRef = collection(db, 'artifacts', CORE_APP_ID, 'public', 'data', 'global_chats');
+        onSnapshot(chatsRef, (snapshot) => {
+            const loadedChats = {};
+            let hasNewMessage = false;
+
+            snapshot.forEach(doc => {
+                const data = doc.data();
+                // Filter only chats where I am a participant
+                if (data.participants && data.participants.includes(window.state.currentUser.id)) {
+                    loadedChats[data.id] = data;
+                    
+                    // Check for new message notification
+                    const existingChat = window.state.chats[data.id];
+                    if (existingChat && data.messages.length > existingChat.messages.length) {
+                        const lastMsg = data.messages[data.messages.length - 1];
+                        if (lastMsg.senderId !== window.state.currentUser.id) {
+                            hasNewMessage = true;
+                        }
+                    }
+                }
+            });
+
+            window.state.chats = loadedChats;
+            
+            if (window.state.currentView === 'chats') {
+                window.renderChatsList();
+            } else if (window.state.currentView === 'chatroom') {
+                window.renderChatMessages();
+            } else if (hasNewMessage) {
+                document.getElementById('chat-badge').classList.remove('hidden');
+            }
+        }, (error) => console.error("Chats listening error:", error));
+    }
+
+    // --- Utility Functions ---
+    window.generateId = function() {
+        return Math.random().toString(36).substr(2, 9);
+    };
+
+    window.showMessage = function(title, text, type = 'info') {
+        document.getElementById('msg-title').innerText = title;
+        document.getElementById('msg-text').innerText = text;
+        const icon = document.getElementById('msg-icon');
+        if (type === 'success') icon.innerHTML = '<i class="fa-solid fa-circle-check text-green-500"></i>';
+        else if (type === 'error') icon.innerHTML = '<i class="fa-solid fa-circle-exclamation text-red-500"></i>';
+        else icon.innerHTML = '<i class="fa-solid fa-circle-info text-primary"></i>';
+        
+        document.getElementById('message-box').classList.remove('hidden');
+    };
+
+    window.closeMessageBox = function() {
+        document.getElementById('message-box').classList.add('hidden');
+    };
+
+    window.getGenderIcon = function(gender) {
+        if (gender === 'male') return '<i class="fa-solid fa-mars text-blue-500"></i>';
+        if (gender === 'female') return '<i class="fa-solid fa-venus text-pink-500"></i>';
+        return '<i class="fa-solid fa-venus-mars text-purple-500"></i>';
+    };
+
+    window.getGenderText = function(gender) {
+        if (gender === 'male') return 'ชาย';
+        if (gender === 'female') return 'หญิง';
+        return 'ไม่จำกัด';
+    };
+
+    window.selectAvatar = function(element, emoji) {
+        // Remove selected class from all
+        document.querySelectorAll('.avatar-option').forEach(el => el.classList.remove('selected'));
+        // Add to clicked
+        element.classList.add('selected');
+        // Update hidden input
+        document.getElementById('login-avatar').value = emoji;
+    };
+
+    // --- Navigation Logic ---
+    window.goTo = function(viewName) {
+        document.getElementById('view-login').classList.add('hidden');
+        document.getElementById('view-feed').classList.add('hidden');
+        document.getElementById('view-chats').classList.add('hidden');
+        document.getElementById('view-chatroom').classList.add('hidden');
+        
+        document.getElementById(`view-${viewName}`).classList.remove('hidden');
+        document.getElementById(`view-${viewName}`).classList.add('flex');
+        window.state.currentView = viewName;
+
+        if (viewName === 'login' || viewName === 'chatroom') {
+            document.getElementById('bottom-nav').classList.add('hidden');
+        } else {
+            document.getElementById('bottom-nav').classList.remove('hidden');
+            document.getElementById('nav-btn-feed').classList.remove('text-primary');
+            document.getElementById('nav-btn-feed').classList.add('text-gray-400');
+            document.getElementById('nav-btn-chats').classList.remove('text-primary');
+            document.getElementById('nav-btn-chats').classList.add('text-gray-400');
+            document.getElementById(`nav-btn-${viewName}`).classList.remove('text-gray-400');
+            document.getElementById(`nav-btn-${viewName}`).classList.add('text-primary');
+        }
+
+        if (viewName === 'feed') window.renderFeed();
+        if (viewName === 'chats') window.renderChatsList();
+    };
+
+    // --- User Logic ---
+    window.login = function() {
+        const name = document.getElementById('login-name').value.trim();
+        const gender = document.getElementById('login-gender').value;
+        const bio = document.getElementById('login-bio').value.trim() || 'พร้อมลุยออกกำลังกาย!';
+        const avatar = document.getElementById('login-avatar').value;
+        const error = document.getElementById('login-error');
+
+        if (!name || !gender) {
+            error.classList.remove('hidden');
+            return;
+        }
+
+        if (!auth.currentUser) {
+            window.showMessage('รอสักครู่', 'กำลังเชื่อมต่อฐานข้อมูล กรุณาลองอีกครั้ง', 'error');
+            return;
+        }
+
+        window.state.currentUser = {
+            id: auth.currentUser.uid,
+            name: name,
+            gender: gender,
+            bio: bio,
+            avatar: avatar
+        };
+        
+        // Save locally
+        localStorage.setItem('fitbuddy_global_profile', JSON.stringify(window.state.currentUser));
+
+        // Set default post time to 1 hr from now
+        const now = new Date();
+        now.setHours(now.getHours() + 1);
+        document.getElementById('post-time').value = now.toTimeString().slice(0,5);
+
+        document.getElementById('nav-my-avatar').innerText = avatar;
+        window.goTo('feed');
+        setupDatabaseListeners();
+    };
+
+    window.showMyProfile = function() {
+        window.openProfileModal(window.state.currentUser);
+    };
+
+    window.openProfileModal = function(userData) {
+        const isMe = userData.id === window.state.currentUser.id;
+        
+        document.getElementById('profile-modal-avatar').innerText = userData.avatar || '👤';
+        document.getElementById('profile-modal-name').innerText = userData.name;
+        document.getElementById('profile-modal-gender').innerHTML = `${window.getGenderText(userData.gender)} ${window.getGenderIcon(userData.gender)}`;
+        document.getElementById('profile-modal-bio').innerText = userData.bio || 'ไม่มีคำแนะนำตัว';
+        
+        const chatBtn = document.getElementById('profile-modal-chat-btn');
+        if (isMe) {
+            chatBtn.classList.add('hidden');
+        } else {
+            chatBtn.classList.remove('hidden');
+            chatBtn.onclick = () => {
+                window.closeProfileModal();
+                window.startChat(userData);
+            };
+        }
+
+        const modal = document.getElementById('modal-profile');
+        const content = document.getElementById('modal-profile-content');
+        modal.classList.remove('hidden');
+        // Small delay for transition
+        setTimeout(() => {
+            modal.classList.remove('opacity-0');
+            content.classList.remove('scale-95');
+        }, 10);
+    };
+
+    window.closeProfileModal = function() {
+        const modal = document.getElementById('modal-profile');
+        const content = document.getElementById('modal-profile-content');
+        modal.classList.add('opacity-0');
+        content.classList.add('scale-95');
+        setTimeout(() => {
+            modal.classList.add('hidden');
+        }, 200);
+    };
+
+    // --- Feed Logic ---
+    window.renderFeed = function() {
+        const container = document.getElementById('feed-list');
+        container.innerHTML = '';
+
+        if (window.state.posts.length === 0) {
+            container.innerHTML = `
+                <div class="flex flex-col items-center justify-center h-full text-gray-400 mt-20">
+                    <i class="fa-solid fa-earth-americas text-5xl mb-4 text-gray-300"></i>
+                    <p>ยังไม่มีคนหาเพื่อนตอนนี้</p>
+                    <p class="text-sm mt-2">กด + เพื่อเป็นคนแรกเลยสิ!</p>
+                </div>`;
+            return;
+        }
+
+        const sortedPosts = [...window.state.posts].sort((a, b) => b.createdAt - a.createdAt);
+
+        sortedPosts.forEach(post => {
+            // Ensure backwards compatibility with old posts missing avatars
+            if (!post.author.avatar) post.author.avatar = '👤';
+            if (!post.author.bio) post.author.bio = 'ไม่มีคำแนะนำตัว';
+
+            const isMe = post.author.id === window.state.currentUser.id;
+            const card = document.createElement('div');
+            card.className = 'bg-white rounded-2xl p-4 shadow-sm border border-gray-100 mb-4 transition hover:shadow-md';
+            
+            // Add click event to avatar/name to view profile
+            const authorDataStr = JSON.stringify(post.author).replace(/'/g, "&apos;").replace(/"/g, "&quot;");
+            
+            card.innerHTML = `
+                <div class="flex justify-between items-start mb-3">
+                    <div class="flex items-center cursor-pointer" onclick="openProfileModal(JSON.parse('${authorDataStr}'))">
+                        <div class="w-12 h-12 rounded-full bg-orange-50 flex items-center justify-center text-2xl mr-3 border border-orange-100">
+                            ${post.author.avatar}
+                        </div>
+                        <div>
+                            <div class="font-bold text-gray-800 text-base">${post.author.name} ${window.getGenderIcon(post.author.gender)}</div>
+                            <div class="text-xs text-gray-500 truncate max-w-[150px]">${post.author.bio}</div>
+                        </div>
+                    </div>
+                    ${isMe ? `<span class="bg-gray-100 text-gray-600 text-[10px] px-2 py-1 rounded-lg">โพสต์ของคุณ</span>` : ''}
+                </div>
+                
+                <div class="bg-blue-50/50 rounded-xl p-3 mb-4 space-y-2 border border-blue-100/50">
+                    <div class="flex items-center text-sm">
+                        <div class="w-6 text-center text-primary"><i class="fa-solid fa-location-dot"></i></div>
+                        <span class="font-medium text-gray-800 ml-1">${post.location}</span>
+                    </div>
+                    <div class="flex items-center text-sm">
+                        <div class="w-6 text-center text-primary"><i class="fa-regular fa-clock"></i></div>
+                        <span class="text-gray-700 ml-1">เวลา: ${post.time} น.</span>
+                    </div>
+                    <div class="flex items-center text-sm">
+                        <div class="w-6 text-center text-primary"><i class="fa-solid fa-user-group"></i></div>
+                        <span class="text-gray-700 ml-1">รับเฉพาะ: <span class="font-medium">${window.getGenderText(post.prefGender)}</span></span>
+                    </div>
+                </div>
+                
+                ${!isMe ? `
+                    <button onclick="startChat(JSON.parse('${authorDataStr}'))" class="w-full bg-secondary text-white font-medium rounded-xl py-2.5 flex items-center justify-center hover:bg-blue-600 transition">
+                        <i class="fa-regular fa-comment-dots mr-2"></i> ทักแชทไปลุยกัน!
+                    </button>
+                ` : ''}
+            `;
+            container.appendChild(card);
+        });
+    };
+
+    window.openCreateModal = function() {
+        const modal = document.getElementById('modal-create');
+        const content = document.getElementById('modal-create-content');
+        modal.classList.remove('hidden');
+        setTimeout(() => content.classList.remove('translate-y-full'), 10);
+    };
+
+    window.closeCreateModal = function() {
+        const modal = document.getElementById('modal-create');
+        const content = document.getElementById('modal-create-content');
+        content.classList.add('translate-y-full');
+        setTimeout(() => modal.classList.add('hidden'), 300);
+    };
+
+    window.submitPost = async function() {
+        if (!auth.currentUser) return;
+        const location = document.getElementById('post-location').value;
+        const time = document.getElementById('post-time').value;
+        const prefGender = document.getElementById('post-pref-gender').value;
+
+        if (!time) {
+            window.showMessage('แจ้งเตือน', 'กรุณาเลือกเวลานัดหมาย', 'error');
+            return;
+        }
+
+        const newPost = {
+            id: window.generateId(),
+            author: window.state.currentUser, // Includes name, gender, bio, avatar
+            location: location,
+            time: time,
+            prefGender: prefGender,
+            createdAt: Date.now()
+        };
+
+        try {
+            // Save to global_posts
+            const docRef = doc(db, 'artifacts', CORE_APP_ID, 'public', 'data', 'global_posts', newPost.id);
+            await setDoc(docRef, newPost);
+            window.closeCreateModal();
+            window.showMessage('สำเร็จ', 'สร้างโพสต์ลงบอร์ดสาธารณะเรียบร้อยแล้ว!', 'success');
+        } catch(error) {
+            console.error("Error adding post: ", error);
+            window.showMessage('ข้อผิดพลาด', 'ไม่สามารถสร้างโพสต์ได้', 'error');
+        }
+    };
+
+    // --- Real-time Chat Logic ---
+    window.startChat = async function(partnerData) {
+        if (!auth.currentUser) return;
+        const myId = window.state.currentUser.id;
+        const partnerId = partnerData.id;
+        
+        // Prevent chatting with oneself
+        if (myId === partnerId) return;
+
+        const chatId = [myId, partnerId].sort().join('_');
+        
+        // Initialize chat if doesn't exist
+        if (!window.state.chats[chatId]) {
+            const chatData = {
+                id: chatId,
+                participants: [myId, partnerId],
+                partnerInfo: {
+                    [myId]: { name: window.state.currentUser.name, avatar: window.state.currentUser.avatar },
+                    [partnerId]: { name: partnerData.name, avatar: partnerData.avatar || '👤' }
+                },
+                messages: [{
+                    senderId: 'system',
+                    text: 'เริ่มการสนทนาแล้ว พิมพ์ทักทายเพื่อนเลย!',
+                    time: Date.now()
+                }]
+            };
+            
+            try {
+                const docRef = doc(db, 'artifacts', CORE_APP_ID, 'public', 'data', 'global_chats', chatId);
+                await setDoc(docRef, chatData);
+            } catch(error) {
+                console.error("Error creating chat: ", error);
+            }
+        }
+        
+        window.openChatRoom(chatId);
+    };
+
+    window.renderChatsList = function() {
+        const container = document.getElementById('chats-list');
+        container.innerHTML = '';
+        
+        const chatValues = Object.values(window.state.chats);
+        
+        if (chatValues.length === 0) {
+            container.innerHTML = `
+                <div class="flex flex-col items-center justify-center h-full text-gray-400 mt-20">
+                    <i class="fa-regular fa-comments text-5xl mb-4 text-gray-300"></i>
+                    <p>ยังไม่มีการสนทนา</p>
+                </div>`;
+            return;
+        }
+
+        // Sort by latest message
+        chatValues.sort((a, b) => {
+            const lastMsgA = a.messages[a.messages.length - 1];
+            const lastMsgB = b.messages[b.messages.length - 1];
+            return (lastMsgB?.time || 0) - (lastMsgA?.time || 0);
+        });
+
+        chatValues.forEach(chat => {
+            const lastMsg = chat.messages[chat.messages.length - 1];
+            let msgText = lastMsg ? lastMsg.text : '';
+            if (msgText.length > 30) msgText = msgText.substring(0, 30) + '...';
+            
+            const isMe = lastMsg && lastMsg.senderId === window.state.currentUser.id;
+            
+            const partnerId = chat.participants.find(id => id !== window.state.currentUser.id);
+            const partnerInfo = chat.partnerInfo[partnerId] || { name: 'เพื่อน', avatar: '👤' };
+
+            const item = document.createElement('div');
+            item.className = 'flex items-center p-4 border-b border-gray-100 hover:bg-gray-50 cursor-pointer transition';
+            item.onclick = () => window.openChatRoom(chat.id);
+            
+            item.innerHTML = `
+                <div class="w-14 h-14 rounded-full bg-gray-100 flex items-center justify-center text-2xl mr-4 flex-shrink-0 border border-gray-200">
+                    ${partnerInfo.avatar}
+                </div>
+                <div class="flex-1 overflow-hidden">
+                    <div class="flex justify-between items-center mb-1">
+                        <h4 class="font-bold text-gray-800 text-base">${partnerInfo.name}</h4>
+                        <span class="text-xs text-gray-400">${lastMsg ? window.formatTime(lastMsg.time) : ''}</span>
+                    </div>
+                    <p class="text-sm ${isMe ? 'text-gray-500' : 'text-gray-800 font-medium'} truncate">${isMe ? 'คุณ: ' : ''}${msgText}</p>
+                </div>
+            `;
+            container.appendChild(item);
+        });
+    };
+
+    window.openChatRoom = function(chatId) {
+        window.state.activeChatId = chatId;
+        const chat = window.state.chats[chatId];
+        
+        if (chat) {
+            const partnerId = chat.participants.find(id => id !== window.state.currentUser.id);
+            const partnerInfo = chat.partnerInfo[partnerId] || { name: 'เพื่อน', avatar: '👤' };
+            document.getElementById('chat-partner-name').innerText = partnerInfo.name;
+            document.getElementById('chat-partner-avatar').innerText = partnerInfo.avatar;
+        }
+        
+        document.getElementById('chat-input').value = '';
+        window.goTo('chatroom');
+        window.renderChatMessages();
+    };
+
+    window.formatTime = function(timestamp) {
+        if (!timestamp) return '';
+        const dateObj = new Date(timestamp);
+        return dateObj.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
+    };
+
+    window.renderChatMessages = function() {
+        const container = document.getElementById('chat-messages');
+        container.innerHTML = '';
+        
+        const chat = window.state.chats[window.state.activeChatId];
+        if (!chat) return;
+
+        let lastDateStr = '';
+
+        chat.messages.forEach(msg => {
+            const msgDate = new Date(msg.time).toLocaleDateString('th-TH');
+            if (msgDate !== lastDateStr) {
+                const dateDiv = document.createElement('div');
+                dateDiv.className = 'text-center text-xs text-gray-400 my-4 bg-gray-200/50 rounded-full px-3 py-1 self-center w-max mx-auto';
+                dateDiv.innerText = msgDate;
+                container.appendChild(dateDiv);
+                lastDateStr = msgDate;
+            }
+
+            const isMe = msg.senderId === window.state.currentUser.id;
+            const isSystem = msg.senderId === 'system';
+            
+            const msgDiv = document.createElement('div');
+            
+            if (isSystem) {
+                msgDiv.className = 'text-center text-xs text-gray-400 my-2';
+                msgDiv.innerText = msg.text;
+            } else {
+                msgDiv.className = `flex flex-col ${isMe ? 'items-end' : 'items-start'}`;
+                msgDiv.innerHTML = `
+                    <div class="chat-bubble ${isMe ? 'sent' : 'received'} shadow-sm text-sm md:text-base">
+                        ${msg.text}
+                    </div>
+                    <span class="text-[10px] text-gray-400 mt-0.5 mb-2 px-1">${window.formatTime(msg.time)}</span>
+                `;
+            }
+            container.appendChild(msgDiv);
+        });
+
+        // Scroll to bottom
+        setTimeout(() => {
+            container.scrollTop = container.scrollHeight;
+        }, 50);
+    };
+
+    window.handleChatKeyPress = function(event) {
+        if (event.key === 'Enter') {
+            window.sendMessage();
+        }
+    };
+
+    window.sendMessage = async function() {
+        const input = document.getElementById('chat-input');
+        const text = input.value.trim();
+        
+        if (!text || !window.state.activeChatId || !auth.currentUser) return;
+
+        const chatId = window.state.activeChatId;
+        const chat = window.state.chats[chatId];
+        if (!chat) return;
+        
+        const newMessage = {
+            senderId: window.state.currentUser.id,
+            text: text,
+            time: Date.now()
+        };
+
+        const updatedMessages = [...chat.messages, newMessage];
+        input.value = '';
+
+        try {
+            const docRef = doc(db, 'artifacts', CORE_APP_ID, 'public', 'data', 'global_chats', chatId);
+            await setDoc(docRef, { messages: updatedMessages }, { merge: true });
+        } catch(error) {
+            console.error("Error sending message: ", error);
+        }
+    };
+
+    // Clear badge when entering chats
+    document.getElementById('nav-btn-chats').addEventListener('click', () => {
+        document.getElementById('chat-badge').classList.add('hidden');
+    });
+
+    // Initialize the app on load
+    initAuth();
+
+</script>
+</body>
+</html>
