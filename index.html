@@ -287,24 +287,29 @@
 
     // --- Firebase & App Configuration ---
     const CORE_APP_ID = typeof __app_id !== 'undefined' ? __app_id : 'fitbuddy-global-app';
-        const firebaseConfig = {
-      // Import the functions you need from the SDKs you need
-import { initializeApp } from "firebase/app";
-import { getAnalytics } from "firebase/analytics";
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
+        <script type="module">
+  // Import the functions you need from the SDKs you need
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js";
+  import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-analytics.js";
+  // TODO: Add SDKs for Firebase products that you want to use
+  // https://firebase.google.com/docs/web/setup#available-libraries
 
-// Your web app's Firebase configuration
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
-const firebaseConfig = {
-  apiKey: "AIzaSyBZN1nOgBGQYboFgL3OoCq1_XLpwNPYVUU",
-  authDomain: "msu-fitspace.firebaseapp.com",
-  projectId: "msu-fitspace",
-  storageBucket: "msu-fitspace.firebasestorage.app",
-  messagingSenderId: "488027390888",
-  appId: "1:488027390888:web:38d195d570c8ad3ec7539d",
-  measurementId: "G-XJHBY6SN4J"
-};
+  // Your web app's Firebase configuration
+  // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+  const firebaseConfig = {
+    apiKey: "AIzaSyBZN1nOgBGQYboFgL3OoCq1_XLpwNPYVUU",
+    authDomain: "msu-fitspace.firebaseapp.com",
+    projectId: "msu-fitspace",
+    storageBucket: "msu-fitspace.firebasestorage.app",
+    messagingSenderId: "488027390888",
+    appId: "1:488027390888:web:38d195d570c8ad3ec7539d",
+    measurementId: "G-XJHBY6SN4J"
+  };
+
+  // Initialize Firebase
+  const app = initializeApp(firebaseConfig);
+  const analytics = getAnalytics(app);
+</script>
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
